@@ -139,6 +139,38 @@ def consolidate(neighbors_of_countries):
                 neighbors_of_countries[neighbor][country] = border_consolidated
 
 
+### SAVE DATA IN SEVERAL FORMATS
+
+def assemble_node_list(neighbors_of_countries):
+    countries = neighbors_of_countries.keys()
+    return [{'name': country} for country in countries]
+
+def assemble_link_list(neighbors_of_countries):
+    link_list = []
+    for country, neighbors in neighbors_of_countries.items():
+        for neighbor, border in neighbors.items():
+            country_pairs_sorted = sorted([country, neighbor])
+            link = {'source': country_pairs_sorted[0],
+                    'target': country_pairs_sorted[1],
+                    'border': border}
+
+            if link not in link_list:
+                link_list.append(link)
+
+    return link_list
+
+def save_data_as_nodes_and_links(neighbors_of_countries):
+    data = {}
+    data['nodes'] = assemble_node_list(neighbors_of_countries)
+    data['links'] = assemble_link_list(neighbors_of_countries)
+
+    with open('nodes_and_links.json', 'w') as f:
+        json.dump(data, f)
+
+def save_countries_and_neighbors(neighbors_of_countries):
+    with open('neighbors_of_countries.json', 'w') as f:
+        json.dump(neighbors_of_countries, f)
+
 
 ### MAIN
 
@@ -146,6 +178,5 @@ rows_of_countries = fetch_data_rows_from_wikipedia()
 countries = get_country_list(rows_of_countries)
 neighbors_of_countries = get_neighbors_of_countries(rows_of_countries, countries)
 consolidate(neighbors_of_countries)
-
-with open('neighbors_of_countries.json', 'w') as f:
-    json.dump(neighbors_of_countries, f)
+save_countries_and_neighbors(neighbors_of_countries)
+save_data_as_nodes_and_links(neighbors_of_countries)
