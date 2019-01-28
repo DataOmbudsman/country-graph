@@ -4,7 +4,10 @@ function drawGraph(graph) {
         width = +svg.attr("width"),
         height = +svg.attr("height");
 
-    var node = svg.append("g")
+    var g = svg.append("g")
+        .attr("class", "everything");
+
+    var node = g.append("g")
         .attr("class", "nodes")
         .selectAll("circle")
         .data(graph.nodes)
@@ -12,7 +15,7 @@ function drawGraph(graph) {
         .append("circle")
         .attr("r", 5);
 
-    var link = svg.append("g")
+    var link = g.append("g")
         .attr("class", "links")
         .selectAll("line")
         .data(graph.links)
@@ -28,6 +31,10 @@ function drawGraph(graph) {
         .force("center_force", d3.forceCenter(width / 2, height / 2))
         .force("links", linkForce);
 
+    function zoomActions() {
+        g.attr("transform", d3.event.transform)
+    }
+
     function tickActions() {
         node
             .attr("cx", function (d) { return d.x; })
@@ -41,6 +48,7 @@ function drawGraph(graph) {
     }
 
     simulation.on("tick", tickActions);
+    d3.zoom().on("zoom", zoomActions)(svg);
 }
 
 d3.json('data/nodes_and_links.json', function (error, data) {
