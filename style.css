@@ -1,0 +1,26 @@
+h1 {
+    text-align: center;
+}
+
+p {
+    text-align: center;
+    font-family: sans-serif;
+}
+
+svg {
+    border: 1px solid lightgray;
+    display: block;
+    margin: auto;
+}
+
+.links line {
+    stroke: #999;
+    stroke-opacity: 0.3;
+    stroke-width: 2;
+}
+
+.nodes circle {
+    stroke: black;
+    stroke-width: 1px;
+    fill: lightgray;
+}
