@@ -1,19 +1,21 @@
-function drawGraph(graph) {
+var width = 960,
+    height = 500
 
-    var svg = d3.select("svg"),
-        width = +svg.attr("width"),
-        height = +svg.attr("height");
+var svg = d3.select("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var simulation = d3.forceSimulation()
+    .force("charge_force", d3.forceManyBody().strength(-15))
+    .force("center_force", d3.forceCenter(width / 2, height / 2))
+    .force("links", d3.forceLink().id(function (d) { return d.name; }));
+
+var zoom = d3.zoom();
+
+function drawGraph(graph) {
 
     var g = svg.append("g")
         .attr("class", "everything");
-
-    var node = g.append("g")
-        .attr("class", "nodes")
-        .selectAll("circle")
-        .data(graph.nodes)
-        .enter()
-        .append("circle")
-        .attr("r", 5);
 
     var link = g.append("g")
         .attr("class", "links")
@@ -22,14 +24,13 @@ function drawGraph(graph) {
         .enter()
         .append("line");
 
-    var linkForce = d3.forceLink(graph.links)
-        .id(function (d) { return d.name; })
-
-    var simulation = d3.forceSimulation()
-        .nodes(graph.nodes)
-        .force("charge_force", d3.forceManyBody().strength(-15))
-        .force("center_force", d3.forceCenter(width / 2, height / 2))
-        .force("links", linkForce);
+    var node = g.append("g")
+        .attr("class", "nodes")
+        .selectAll("circle")
+        .data(graph.nodes)
+        .enter()
+        .append("circle")
+        .attr("r", 5)
 
     function zoomActions() {
         g.attr("transform", d3.event.transform)
@@ -47,8 +48,14 @@ function drawGraph(graph) {
             .attr("y2", function (d) { return d.target.y; });
     }
 
-    simulation.on("tick", tickActions);
-    d3.zoom().on("zoom", zoomActions)(svg);
+
+    simulation
+        .on("tick", tickActions)
+        .nodes(graph.nodes)
+        .force("links")
+        .links(graph.links);
+
+    zoom.on("zoom", zoomActions)(svg);
 }
 
 d3.json('data/nodes_and_links.json', function (error, data) {
