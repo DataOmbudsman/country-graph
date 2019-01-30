@@ -12,6 +12,15 @@ var simulation = d3.forceSimulation()
 
 var zoom = d3.zoom();
 
+function sizeOfCircle(d) {
+    let min_size = 6;
+    let max_size = 16;
+    let max_neighbor_count = 14;
+
+    var normalized = d.neighbor_count / max_neighbor_count;
+    return min_size + normalized * (max_size - min_size)
+}
+
 function drawGraph(graph) {
 
     var g = svg.append("g")
@@ -30,7 +39,7 @@ function drawGraph(graph) {
         .data(graph.nodes)
         .enter()
         .append("circle")
-        .attr("r", 5)
+        .attr("r", sizeOfCircle)
         .call(d3.drag()
             .on("start", dragstarted)
             .on("drag", dragged)

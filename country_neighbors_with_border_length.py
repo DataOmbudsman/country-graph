@@ -143,7 +143,8 @@ def consolidate(neighbors_of_countries):
 
 def assemble_node_list(neighbors_of_countries):
     countries = neighbors_of_countries.keys()
-    return [{'name': country} for country in countries]
+    return [{'name': country, 'neighbor_count': len(neighbors_of_countries[country])}
+            for country in countries]
 
 def assemble_link_list(neighbors_of_countries):
     link_list = []
