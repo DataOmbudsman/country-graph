@@ -6,9 +6,9 @@ var svg = d3.select("svg")
     .attr("height", height);
 
 var simulation = d3.forceSimulation()
-    .force("charge_force", d3.forceManyBody().strength(-15))
+    .force("charge_force", d3.forceManyBody().strength(-25))
     .force("center_force", d3.forceCenter(width / 2, height / 2))
-    .force("links", d3.forceLink().id(function (d) { return d.name; }));
+    .force("links", d3.forceLink().id(nodeName).distance(linkDistance))
     .force("collide", d3.forceCollide(collisionRadius))
     ;
 
@@ -25,6 +25,14 @@ function sizeOfCircle(d) {
 
 function collisionRadius(d) {
     return d.neighbor_count * 4;
+}
+
+function nodeName(d) {
+    return d.name;
+}
+
+function linkDistance(d) {
+    return d.border / 100;
 }
 
 function drawGraph(graph) {
@@ -67,7 +75,7 @@ function drawGraph(graph) {
     }
 
     function dragstarted(d) {
-        if (!d3.event.active) simulation.alphaTarget(0.1).restart();
+        if (!d3.event.active) simulation.alphaTarget(0.33).restart();
         d.fx = d.x;
         d.fy = d.y;
     }
