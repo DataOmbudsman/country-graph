@@ -9,6 +9,8 @@ var simulation = d3.forceSimulation()
     .force("charge_force", d3.forceManyBody().strength(-15))
     .force("center_force", d3.forceCenter(width / 2, height / 2))
     .force("links", d3.forceLink().id(function (d) { return d.name; }));
+    .force("collide", d3.forceCollide(collisionRadius))
+    ;
 
 var zoom = d3.zoom();
 
@@ -21,8 +23,11 @@ function sizeOfCircle(d) {
     return min_size + normalized * (max_size - min_size)
 }
 
-function drawGraph(graph) {
+function collisionRadius(d) {
+    return d.neighbor_count * 4;
+}
 
+function drawGraph(graph) {
     var g = svg.append("g")
         .attr("class", "everything");
 
