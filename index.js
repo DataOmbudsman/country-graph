@@ -12,7 +12,14 @@ var simulation = d3.forceSimulation()
     .force("collide", d3.forceCollide(collisionRadius))
     ;
 
+var voronoi = d3.voronoi()
+    .x(function (d) { return d.x; })
+    .y(function (d) { return d.y; })
+    .extent([[width * -100, height * -100], [width * 100, height * 100]]);
+
 var zoom = d3.zoom();
+
+var panMode = true;
 
 function sizeOfCircle(d) {
     let min_size = 6;
@@ -47,23 +54,45 @@ function drawGraph(graph) {
         .append("line");
 
     var node = g.append("g")
-        .attr("class", "nodes")
-        .selectAll("circle")
+        .selectAll("nodes")
         .data(graph.nodes)
         .enter()
-        .append("circle")
-        .attr("r", sizeOfCircle)
+        .append("g")
+        .attr("class", "nodes")
         .call(d3.drag()
             .on("start", dragstarted)
             .on("drag", dragged)
             .on("end", dragended));
+
+    var circle = node
+        .append("circle")
+        .attr("r", sizeOfCircle);
+
+    var label = node
+        .append("text")
+        .attr("dy", ".35em")
+        .text(nodeName);
+
+    var cell = node
+        .append("path")
+        .attr("class", "cell");
+
+    function switchPanMode() {
+        var newPointerEvents = panMode ? "all" : "none";
+        cell.style("pointer-events", newPointerEvents);
+        panMode = !panMode
+    }
 
     function zoomActions() {
         g.attr("transform", d3.event.transform)
     }
 
     function tickActions() {
-        node
+        cell
+            .data(voronoi.polygons(graph.nodes))
+            .attr("d", function (d) { return d.length ? "M" + d.join("L") : null; });
+
+        circle
             .attr("cx", function (d) { return d.x; })
             .attr("cy", function (d) { return d.y; });
 
@@ -72,6 +101,10 @@ function drawGraph(graph) {
             .attr("y1", function (d) { return d.source.y; })
             .attr("x2", function (d) { return d.target.x; })
             .attr("y2", function (d) { return d.target.y; });
+
+        label
+            .attr("x", function (d) { return d.x + 20; })
+            .attr("y", function (d) { return d.y; });
     }
 
     function dragstarted(d) {
@@ -90,6 +123,10 @@ function drawGraph(graph) {
         d.fx = null;
         d.fy = null;
     }
+
+    d3.select("body").on("keydown", () => {
+        if (d3.event.keyCode === 32) switchPanMode()
+    });
 
     simulation
         .on("tick", tickActions)

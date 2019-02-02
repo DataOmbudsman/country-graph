@@ -16,11 +16,29 @@ svg {
 .links line {
     stroke: #999;
     stroke-opacity: 0.6;
-    stroke-width: 2;
+    stroke-width: 3px;
 }
 
 .nodes circle {
     stroke: black;
-    stroke-width: 1px;
+    stroke-width: 2px;
     fill: lightgray;
+}
+
+.nodes text {
+    display: none;
+    font: 15px sans-serif;
+  }
+
+.nodes:hover circle {
+    fill: #000;
+}
+
+.nodes:hover text {
+    display: inline;
+}
+
+.cell {
+    fill: none;
+    pointer-events: none;
 }
