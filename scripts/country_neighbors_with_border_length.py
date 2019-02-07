@@ -1,14 +1,17 @@
 import json
 import re
 import requests
+
 from bs4 import BeautifulSoup
 from typing import List, Dict
+
+from continents_of_countries import get_continents_of_countries
 
 NeighborBorder = Dict[str, int]
 
 ### FETCH FROM WIKIPEDIA
 
-def fetch_data_rows_from_wikipedia():
+def fetch_neighbor_data_from_wikipedia():
     url = 'https://en.wikipedia.org/wiki/List_of_countries_and_territories_by_land_borders'
     source = requests.get(url).text
     soup = BeautifulSoup(source, 'lxml')
@@ -46,7 +49,7 @@ def get_country_name(row) -> str:
     country_name = _hack_country_name(country_name)
     return country_name
 
-def get_country_list(rows_of_countries):
+def get_country_names(rows_of_countries):
     return set([
         get_country_name(row) for row in rows_of_countries
         if contains_sovereign_country(row)
@@ -141,10 +144,14 @@ def consolidate(neighbors_of_countries):
 
 ### SAVE DATA IN SEVERAL FORMATS
 
-def assemble_node_list(neighbors_of_countries):
+def assemble_node_list(neighbors_of_countries, continents_of_countries):
     countries = neighbors_of_countries.keys()
-    return [{'name': country, 'neighbor_count': len(neighbors_of_countries[country])}
-            for country in countries]
+    return [
+        {'name': country,
+         'neighbor_count': len(neighbors_of_countries[country]),
+         'continents': list(continents_of_countries[country])}
+         for country in countries
+    ]
 
 def assemble_link_list(neighbors_of_countries):
     link_list = []
@@ -160,9 +167,9 @@ def assemble_link_list(neighbors_of_countries):
 
     return link_list
 
-def save_data_as_nodes_and_links(neighbors_of_countries):
+def save_data_as_nodes_and_links(neighbors_of_countries, continents_of_countries):
     data = {}
-    data['nodes'] = assemble_node_list(neighbors_of_countries)
+    data['nodes'] = assemble_node_list(neighbors_of_countries, continents_of_countries)
     data['links'] = assemble_link_list(neighbors_of_countries)
 
     with open('nodes_and_links.json', 'w') as f:
@@ -175,9 +182,10 @@ def save_countries_and_neighbors(neighbors_of_countries):
 
 ### MAIN
 
-rows_of_countries = fetch_data_rows_from_wikipedia()
-countries = get_country_list(rows_of_countries)
-neighbors_of_countries = get_neighbors_of_countries(rows_of_countries, countries)
+neighbor_data = fetch_neighbor_data_from_wikipedia()
+countries = get_country_names(neighbor_data)
+neighbors_of_countries = get_neighbors_of_countries(neighbor_data, countries)
 consolidate(neighbors_of_countries)
+continents_of_countries = get_continents_of_countries(countries)
 save_countries_and_neighbors(neighbors_of_countries)
-save_data_as_nodes_and_links(neighbors_of_countries)
+save_data_as_nodes_and_links(neighbors_of_countries, continents_of_countries)

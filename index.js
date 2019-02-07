@@ -21,6 +21,16 @@ var zoom = d3.zoom();
 
 var panMode = true;
 
+var colorMapping = {
+    "Africa": "#FF6347",
+    "Asia": "#DCDCDC",
+    "Europe": "#8FBC8F",
+    "North_America": "#BA55D3",
+    "Oceania": "#1E90FF",
+    "South_America": "#FFA500",
+    "Multi": "#FFD700",
+}
+
 function sizeOfCircle(d) {
     let min_size = 6;
     let max_size = 16;
@@ -40,6 +50,11 @@ function nodeName(d) {
 
 function linkDistance(d) {
     return d.border / 100;
+}
+
+function colorOfCircle(d) {
+    var key = d.continents.length > 1 ? "Multi" : d.continents[0]
+    return colorMapping[key]
 }
 
 function drawGraph(graph) {
@@ -66,7 +81,8 @@ function drawGraph(graph) {
 
     var circle = node
         .append("circle")
-        .attr("r", sizeOfCircle);
+        .attr("r", sizeOfCircle)
+        .attr("fill", colorOfCircle);
 
     var label = node
         .append("text")

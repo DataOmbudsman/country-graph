@@ -22,7 +22,6 @@ svg {
 .nodes circle {
     stroke: black;
     stroke-width: 2px;
-    fill: lightgray;
 }
 
 .nodes text {
