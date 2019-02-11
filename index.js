@@ -69,11 +69,12 @@ function drawGraph(graph) {
         .append("line");
 
     var node = g.append("g")
+        .attr("class", "nodes")
         .selectAll("nodes")
         .data(graph.nodes)
         .enter()
         .append("g")
-        .attr("class", "nodes")
+        .attr("class", "node")
         .call(d3.drag()
             .on("start", dragstarted)
             .on("drag", dragged)
