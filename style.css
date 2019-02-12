@@ -8,9 +8,12 @@ p {
 }
 
 svg {
-    border: 1px solid lightgray;
     display: block;
     margin: auto;
+}
+
+.map {
+    border: 1px solid lightgray;
 }
 
 .links line {
@@ -40,4 +43,8 @@ svg {
 .cell {
     fill: none;
     pointer-events: none;
+}
+
+.legendlabel {
+    font: 14px sans-serif;
 }

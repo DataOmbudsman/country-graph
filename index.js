@@ -2,6 +2,7 @@ var width = 960,
     height = 500
 
 var svg = d3.select("svg")
+    .attr("class", "map")
     .attr("width", width)
     .attr("height", height);
 
