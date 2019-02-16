@@ -79,7 +79,9 @@ function drawGraph(graph) {
         .call(d3.drag()
             .on("start", dragstarted)
             .on("drag", dragged)
-            .on("end", dragended));
+            .on("end", dragended))
+        .on("mouseover", highlightStart)
+        .on("mouseout", highlightEnd);
 
     var circle = node
         .append("circle")
@@ -89,7 +91,8 @@ function drawGraph(graph) {
     var label = node
         .append("text")
         .attr("dy", ".35em")
-        .text(nodeName);
+        .text(nodeName)
+        .style("pointer-events", "none");
 
     var cell = node
         .append("path")
@@ -140,6 +143,47 @@ function drawGraph(graph) {
         if (!d3.event.active) simulation.alphaTarget(0);
         d.fx = null;
         d.fy = null;
+    }
+
+    var linkSet = {};
+    graph.links.forEach(function (link) {
+        linkSet[link.source + "," + link.target] = true;
+    });
+
+    function areLinked(nodeA, nodeB) {
+        return (
+            linkSet[nodeA.name + "," + nodeB.name] ||
+            linkSet[nodeB.name + "," + nodeA.name] ||
+            nodeA.name == nodeB.name
+        );
+    }
+
+    function highlightStart(highlightedNode) {
+        var targetOpacity = 0.2;
+        node
+            .filter((node) => !areLinked(highlightedNode, node))
+            .attr("fill-opacity", targetOpacity)
+            .style("stroke-opacity", targetOpacity);
+
+        label
+            .filter((node) => areLinked(highlightedNode, node))
+            .style("display", "inline");
+
+        link
+            .filter((link) => link.source != highlightedNode && link.target != highlightedNode)
+            .style("stroke-opacity", targetOpacity);
+    }
+
+    function highlightEnd() {
+        node
+            .style("stroke-opacity", 1)
+            .attr("fill-opacity", 1);
+
+        label
+            .style("display", "none");
+
+        link
+            .style("stroke-opacity", 1);
     }
 
     d3.select("body").on("keydown", () => {
