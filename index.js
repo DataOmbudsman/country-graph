@@ -94,6 +94,13 @@ function drawGraph(graph) {
         .text(nodeName)
         .style("pointer-events", "none");
 
+    var modeLabel = svg
+        .append("text")
+        .attr("class", "modelabel")
+        .text("Mode: Background Pan")
+        .attr("x", 5)
+        .attr("y", 20);
+
     var cell = node
         .append("path")
         .attr("class", "cell");
@@ -101,9 +108,13 @@ function drawGraph(graph) {
     function switchPanMode() {
         var newPointerEvents = panMode ? "all" : "none";
         var newCursorStyle = panMode ? "default" : "move";
+        var newModeLabel = panMode ? "Mode: Easy Highlight" : "Mode: Background Pan";
+
         cell.style("pointer-events", newPointerEvents);
         svg.style("cursor", newCursorStyle);
-        panMode = !panMode
+        modeLabel.text(newModeLabel);
+
+        panMode = !panMode;
     }
 
     function zoomActions() {
@@ -189,7 +200,8 @@ function drawGraph(graph) {
     }
 
     d3.select("body").on("keydown", () => {
-        if (d3.event.keyCode === 32) switchPanMode()
+        var keyCode = d3.event.keyCode;
+        if (keyCode === 13 || keyCode === 32) switchPanMode()
     });
 
     simulation
