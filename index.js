@@ -100,7 +100,9 @@ function drawGraph(graph) {
 
     function switchPanMode() {
         var newPointerEvents = panMode ? "all" : "none";
+        var newCursorStyle = panMode ? "default" : "move";
         cell.style("pointer-events", newPointerEvents);
+        svg.style("cursor", newCursorStyle);
         panMode = !panMode
     }
 
