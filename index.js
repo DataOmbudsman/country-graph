@@ -7,7 +7,7 @@ var svg = d3.select("svg")
     .attr("height", height);
 
 var simulation = d3.forceSimulation()
-    .force("charge_force", d3.forceManyBody().strength(-25))
+    .force("charge_force", d3.forceManyBody().strength(-26))
     .force("center_force", d3.forceCenter(width / 2, height / 2))
     .force("links", d3.forceLink().id(nodeName).distance(linkDistance))
     .force("collide", d3.forceCollide(collisionRadius))

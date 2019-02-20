@@ -9,7 +9,8 @@ from continents_of_countries import get_continents_of_countries
 
 NeighborBorder = Dict[str, int]
 
-### FETCH FROM WIKIPEDIA
+# FETCH FROM WIKIPEDIA
+
 
 def fetch_neighbor_data_from_wikipedia():
     url = 'https://en.wikipedia.org/wiki/List_of_countries_and_territories_by_land_borders'
@@ -17,19 +18,22 @@ def fetch_neighbor_data_from_wikipedia():
     soup = BeautifulSoup(source, 'lxml')
 
     country_table = soup.find('table', {'class': 'wikitable sortable'})
-    rows = country_table.find_next('tbody', recursive=False).findChildren('tr', recursive=False)
+    rows = country_table.find_next(
+        'tbody', recursive=False).findChildren('tr', recursive=False)
     return rows[2:]
 
 
-### COUNTRY LIST
+# COUNTRY LIST
 
 def contains_sovereign_country(row) -> bool:
     country_cell = row.find_next('td')
     indicators_of_partial_sovereignity = country_cell.find_all('i')
     return len(indicators_of_partial_sovereignity) == 0
 
+
 def _remove_text_in_parentheses(country_name):
     return re.sub(r'\(.*?\)', '', country_name).strip()
+
 
 def _hack_country_name(country_name):
     """
@@ -40,6 +44,7 @@ def _hack_country_name(country_name):
         return 'Netherlands'
     return country_name
 
+
 def get_country_name(row) -> str:
     country_cell = row.find_next('td')
     first_link = country_cell.find_next('a')
@@ -49,6 +54,7 @@ def get_country_name(row) -> str:
     country_name = _hack_country_name(country_name)
     return country_name
 
+
 def get_country_names(rows_of_countries):
     return set([
         get_country_name(row) for row in rows_of_countries
@@ -56,16 +62,18 @@ def get_country_names(rows_of_countries):
     ])
 
 
-### NEIGHBOR LIST WITH BORDERS
+# NEIGHBOR LIST WITH BORDERS
 
 def _is_sovereign_neighbor(neighbor) -> bool:
     return neighbor in countries
+
 
 def _get_neighbors(neighbor_container) -> List[str]:
     neighbor_links = neighbor_container.find_all('a')
     neighbors = [neighbor_link.text for neighbor_link in neighbor_links
                  if _is_sovereign_neighbor(neighbor_link.text)]
     return neighbors
+
 
 def _get_chunk_of_neighbor(neighbor, chunks) -> str:
     for chunk in chunks:
@@ -76,6 +84,7 @@ def _get_chunk_of_neighbor(neighbor, chunks) -> str:
             return chunk
     print('Something unexpected happened')
 
+
 def _get_border_from_chunk(chunk: str) -> float:
     has_border_data = ':' in chunk
     if has_border_data:
@@ -83,11 +92,13 @@ def _get_border_from_chunk(chunk: str) -> float:
         return float(border)
     return -1
 
+
 def _get_border_from_container(neighbor, neighbor_container) -> float:
     chunks = neighbor_container.text.split('\xa0')
     chunk_of_neighbor = _get_chunk_of_neighbor(neighbor, chunks)
     border = _get_border_from_chunk(chunk_of_neighbor)
     return border
+
 
 def _get_neighbors_with_borders(neighbors, neighbor_container):
     neighbors_with_borders = [(neighbor, _get_border_from_container(neighbor, neighbor_container))
@@ -96,18 +107,24 @@ def _get_neighbors_with_borders(neighbors, neighbor_container):
                               if border != -1}
     return neighbors_with_borders
 
+
 def extract_neighbor_border_pairs(neighbor_container) -> NeighborBorder:
     neighbors = _get_neighbors(neighbor_container)
-    neighbors_with_borders = _get_neighbors_with_borders(neighbors, neighbor_container)
+    neighbors_with_borders = _get_neighbors_with_borders(
+        neighbors, neighbor_container)
     return neighbors_with_borders
 
+
 def get_neighbors_with_border_length(row) -> NeighborBorder:
-    neighbor_containers = row.find_all('div', {'class': 'mw-collapsible-content'})
+    neighbor_containers = row.find_all(
+        'div', {'class': 'mw-collapsible-content'})
     if neighbor_containers:
         neighbor_container = neighbor_containers[-1]
-        neighbor_border_pairs = extract_neighbor_border_pairs(neighbor_container)
+        neighbor_border_pairs = extract_neighbor_border_pairs(
+            neighbor_container)
         return neighbor_border_pairs
     return {}
+
 
 def get_neighbors_of_countries(rows_of_countries, countries):
     neighbors_of_countries = {}
@@ -121,7 +138,7 @@ def get_neighbors_of_countries(rows_of_countries, countries):
     return neighbors_of_countries
 
 
-### CLEANUP NEIGHBOR DATA
+# CLEANUP NEIGHBOR DATA
 
 def consolidate(neighbors_of_countries):
     """
@@ -142,16 +159,29 @@ def consolidate(neighbors_of_countries):
                 neighbors_of_countries[neighbor][country] = border_consolidated
 
 
-### SAVE DATA IN SEVERAL FORMATS
+# SAVE DATA IN SEVERAL FORMATS
 
 def assemble_node_list(neighbors_of_countries, continents_of_countries):
+    order_for_visualization = [
+        'Oceania',
+        'North_America',
+        'South_America',
+        'Africa',
+        'Europe',
+        'Asia',
+    ]
+
     countries = neighbors_of_countries.keys()
-    return [
+    node_list = [
         {'name': country,
          'neighbor_count': len(neighbors_of_countries[country]),
          'continents': list(continents_of_countries[country])}
          for country in countries
     ]
+
+    return sorted(node_list,
+                  key=lambda node: order_for_visualization.index(node['continents'][0]))
+
 
 def assemble_link_list(neighbors_of_countries):
     link_list = []
@@ -167,20 +197,23 @@ def assemble_link_list(neighbors_of_countries):
 
     return link_list
 
+
 def save_data_as_nodes_and_links(neighbors_of_countries, continents_of_countries):
     data = {}
-    data['nodes'] = assemble_node_list(neighbors_of_countries, continents_of_countries)
+    data['nodes'] = assemble_node_list(
+        neighbors_of_countries, continents_of_countries)
     data['links'] = assemble_link_list(neighbors_of_countries)
 
     with open('nodes_and_links.json', 'w') as f:
         json.dump(data, f)
+
 
 def save_countries_and_neighbors(neighbors_of_countries):
     with open('neighbors_of_countries.json', 'w') as f:
         json.dump(neighbors_of_countries, f)
 
 
-### MAIN
+# MAIN
 
 neighbor_data = fetch_neighbor_data_from_wikipedia()
 countries = get_country_names(neighbor_data)
